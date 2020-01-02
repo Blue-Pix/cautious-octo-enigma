@@ -4,7 +4,7 @@ import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.svm import SVC
 
-class DialogAgent:
+class DialogueAgent:
 
   def __init__(self):
     self.tagger = MeCab.Tagger()
@@ -36,17 +36,15 @@ if __name__ == '__main__':
   BASE_DIR = normpath(dirname(__file__))
   training_data = pd.read_csv(join(BASE_DIR, './training_data.csv'))
   
-  dialog_agent = DialogAgent()
-  dialog_agent.train(training_data['text'], training_data['label'])
+  dialogue_agent = DialogueAgent()
+  dialogue_agent.train(training_data['text'], training_data['label'])
 
   with open(join(BASE_DIR, './replies.csv')) as f:
     replies = f.read().split('\n')
 
-  EXIT_CLASS_ID = 41
-  while True:
-    message = input()
-    predictions = dialog_agent.predict([message])
-    predicted_class_id = predictions[0]
-    print(replies[predicted_class_id])
-    if predicted_class_id == EXIT_CLASS_ID:
-      break
+  input_text = '名前を教えてよ'
+  predictions = dialogue_agent.predict([input_text])
+  predicted_class_id = predictions[0]
+
+  print(replies[predicted_class_id])
+
