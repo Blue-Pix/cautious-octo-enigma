@@ -9,7 +9,8 @@ import unicodedata
 class DialogueAgent:
 
   def __init__(self):
-    self.tagger = MeCab.Tagger()
+    DIC_DIR = "/usr/lib/mecab/dic/mecab-ipadic-neologd"
+    self.tagger = MeCab.Tagger('-d {}'.format(DIC_DIR))
 
   def _tokenize(self, text):
     text = unicodedata.normalize('NFKC', text)
