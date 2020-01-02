@@ -1,0 +1,52 @@
+from os.path import dirname, join, normpath
+import MeCab
+import pandas as pd
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.svm import SVC
+
+class DialogAgent:
+
+  def __init__(self):
+    self.tagger = MeCab.Tagger()
+
+  def _tokenize(self, text):
+    node = self.tagger.parseToNode(text)
+    tokens = []
+    while node:
+      if node.surface != '':
+        tokens.append(node.surface)
+      node = node.next
+    return tokens
+
+  def train(self, texts, labels):
+    vectorizer = CountVectorizer(tokenizer=self._tokenize)
+    bow = vectorizer.fit_transform(texts)
+
+    classifier = SVC()
+    classifier.fit(bow, labels)
+
+    self.vectorizer = vectorizer
+    self.classifier = classifier
+
+  def predict(self, texts):
+    bow = self.vectorizer.transform(texts)
+    return self.classifier.predict(bow)
+
+if __name__ == '__main__':
+  BASE_DIR = normpath(dirname(__file__))
+  training_data = pd.read_csv(join(BASE_DIR, './training_data.csv'))
+  
+  dialog_agent = DialogAgent()
+  dialog_agent.train(training_data['text'], training_data['label'])
+
+  with open(join(BASE_DIR, './replies.csv')) as f:
+    replies = f.read().split('\n')
+
+  EXIT_CLASS_ID = 41
+  while True:
+    message = input()
+    predictions = dialog_agent.predict([message])
+    predicted_class_id = predictions[0]
+    print(replies[predicted_class_id])
+    if predicted_class_id == EXIT_CLASS_ID:
+      break
