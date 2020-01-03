@@ -1,7 +1,8 @@
 from os.path import dirname, join, normpath
 import MeCab
 import pandas as pd
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC
 import neologdn
 import unicodedata
@@ -29,18 +30,15 @@ class DialogueAgent:
     return tokens
 
   def train(self, texts, labels):
-    vectorizer = CountVectorizer(tokenizer=self._tokenize)
-    bow = vectorizer.fit_transform(texts)
-
-    classifier = SVC()
-    classifier.fit(bow, labels)
-
-    self.vectorizer = vectorizer
-    self.classifier = classifier
+    pipeline = Pipeline([
+      ('vectorizer', TfidfVectorizer(tokenizer=self._tokenize, ngram_range=(1,3))),
+      ('classifier', SVC())
+    ])
+    pipeline.fit(texts, labels)
+    self.pipeline = pipeline
 
   def predict(self, texts):
-    bow = self.vectorizer.transform(texts)
-    return self.classifier.predict(bow)
+    return self.pipeline.predict(texts)
 
 if __name__ == '__main__':
   BASE_DIR = normpath(dirname(__file__))
